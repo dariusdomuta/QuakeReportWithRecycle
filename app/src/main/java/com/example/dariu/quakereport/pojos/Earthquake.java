@@ -1,4 +1,4 @@
-package com.example.dariu.quakereport;
+package com.example.dariu.quakereport.pojos;
 
 /**
  * An {@link Earthquake} object contains information related to a single earthquake.

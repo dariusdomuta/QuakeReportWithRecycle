@@ -1,5 +1,17 @@
-package com.example.dariu.quakereport;
+package com.example.dariu.quakereport.adapters;
 
+import android.content.Context;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.example.dariu.quakereport.R;
+import com.example.dariu.quakereport.activities.EarthquakeActivity;
+import com.example.dariu.quakereport.pojos.Earthquake;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v4.content.ContextCompat;
@@ -8,64 +20,74 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.support.v4.content.ContextCompat;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.w3c.dom.Text;
+
+import java.util.List;
+
 /**
- * An {@link EarthquakeAdapter} knows how to create a list item layout for each earthquake
- * in the data source (a list of {@link Earthquake} objects).
- *
- * These list item layouts will be provided to an adapter view like ListView
- * to be displayed to the user.
+ * Created by dariu on 11/7/2017.
  */
-public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
 
-    /**
-     * The part of the location string from the USGS service that we use to determine
-     * whether or not there is a location offset present ("5km N of Cairo, Egypt").
-     */
+public class EarthquakeAdapterWithRecyclerViewAdapter extends RecyclerView.Adapter<EarthquakeAdapterWithRecyclerViewAdapter.ItemViewHolder> {
+
     private static final String LOCATION_SEPARATOR = " of ";
+    private final List<Earthquake> earthquakes;
+    private final Context context;
 
-    /**
-     * Constructs a new {@link EarthquakeAdapter}.
-     *
-     * @param context of the app
-     * @param earthquakes is the list of earthquakes, which is the data source of the adapter
-     */
-    public EarthquakeAdapter(Context context, List<Earthquake> earthquakes) {
-        super(context, 0, earthquakes);
+    public EarthquakeAdapterWithRecyclerViewAdapter (Context context, List<Earthquake> earthquakes)
+    {
+        this.context = context;
+        this.earthquakes = earthquakes;
     }
 
-    /**
-     * Returns a list item view that displays information about the earthquake at the given position
-     * in the list of earthquakes.
-     */
+
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        // Check if there is an existing list item view (called convertView) that we can reuse,
-        // otherwise, if convertView is null, then inflate a new list item layout.
-        View listItemView = convertView;
-        if (listItemView == null) {
-            listItemView = LayoutInflater.from(getContext()).inflate(
-                    R.layout.earthquake_list_item, parent, false);
+    public int getItemCount() {
+        if (earthquakes != null) {
+            return earthquakes.size();
         }
+        return 0;
+    }
 
-        // Find the earthquake at the given position in the list of earthquakes
-        Earthquake currentEarthquake = getItem(position);
+    public Earthquake getItem(int i) {
+        if (earthquakes != null && earthquakes.size() > i) {
+            return earthquakes.get(i);
+        }
+        return null;
+    }
 
-        // Find the TextView with view ID magnitude
-        TextView magnitudeView = (TextView) listItemView.findViewById(R.id.magnitude);
+    @Override
+    public EarthquakeAdapterWithRecyclerViewAdapter.ItemViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        Context context = viewGroup.getContext();
+        int layoutIdForListItem = R.layout.earthquake_activity;
+        LayoutInflater inflater = LayoutInflater.from(context);
+        boolean shouldAttachToParentImmediately = false;
+
+        View view = inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
+        ItemViewHolder viewHolder = new ItemViewHolder(view);
+
+        return viewHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(EarthquakeAdapterWithRecyclerViewAdapter.ItemViewHolder holder, int position) {
+        Earthquake currentEarthquake = earthquakes.get(position);
+
         // Format the magnitude to show 1 decimal place
         String formattedMagnitude = formatMagnitude(currentEarthquake.getMagnitude());
         // Display the magnitude of the current earthquake in that TextView
-        magnitudeView.setText(formattedMagnitude);
+        holder.magnitudeView.setText(formattedMagnitude);
 
         // Set the proper background color on the magnitude circle.
         // Fetch the background from the TextView, which is a GradientDrawable.
-        GradientDrawable magnitudeCircle = (GradientDrawable) magnitudeView.getBackground();
+        GradientDrawable magnitudeCircle = (GradientDrawable) holder.magnitudeView.getBackground();
         // Get the appropriate background color based on the current earthquake magnitude
         int magnitudeColor = getMagnitudeColor(currentEarthquake.getMagnitude());
         // Set the color on the magnitude circle
@@ -95,40 +117,47 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
         } else {
             // Otherwise, there is no " of " text in the originalLocation string.
             // Hence, set the default location offset to say "Near the".
-            locationOffset = getContext().getString(R.string.near_the);
+            locationOffset = "Near the";
             // The primary location will be the full location string "Pacific-Antarctic Ridge".
             primaryLocation = originalLocation;
         }
-
-        // Find the TextView with view ID location
-        TextView primaryLocationView = (TextView) listItemView.findViewById(R.id.primary_location);
         // Display the location of the current earthquake in that TextView
-        primaryLocationView.setText(primaryLocation);
-
-        // Find the TextView with view ID location offset
-        TextView locationOffsetView = (TextView) listItemView.findViewById(R.id.location_offset);
+        holder.primaryLocationView.setText(primaryLocation);
         // Display the location offset of the current earthquake in that TextView
-        locationOffsetView.setText(locationOffset);
+        holder.locationOffsetView.setText(locationOffset);
 
         // Create a new Date object from the time in milliseconds of the earthquake
         Date dateObject = new Date(currentEarthquake.getTimeInMilliseconds());
-
-        // Find the TextView with view ID date
-        TextView dateView = (TextView) listItemView.findViewById(R.id.date);
         // Format the date string (i.e. "Mar 3, 1984")
         String formattedDate = formatDate(dateObject);
         // Display the date of the current earthquake in that TextView
-        dateView.setText(formattedDate);
+        holder.dateView.setText(formattedDate);
 
-        // Find the TextView with view ID time
-        TextView timeView = (TextView) listItemView.findViewById(R.id.time);
         // Format the time string (i.e. "4:30PM")
         String formattedTime = formatTime(dateObject);
         // Display the time of the current earthquake in that TextView
-        timeView.setText(formattedTime);
+        holder.timeView.setText(formattedTime);
 
-        // Return the list item view that is now showing the appropriate data
-        return listItemView;
+    }
+
+    class ItemViewHolder extends RecyclerView.ViewHolder {
+
+        TextView magnitudeView;
+        TextView primaryLocationView;
+        TextView locationOffsetView;
+        TextView dateView;
+        TextView timeView;
+
+        public ItemViewHolder(View itemView){
+            super(itemView);
+            View listItemView = itemView;
+            magnitudeView = (TextView) listItemView.findViewById(R.id.magnitude);
+            primaryLocationView = (TextView) listItemView.findViewById(R.id.primary_location);
+            locationOffsetView = (TextView) listItemView.findViewById(R.id.location_offset);
+            dateView = (TextView) listItemView.findViewById(R.id.date);
+            timeView = (TextView) listItemView.findViewById(R.id.time);
+        }
+
     }
 
     /**
@@ -173,7 +202,7 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
                 break;
         }
 
-        return ContextCompat.getColor(getContext(), magnitudeColorResourceId);
+        return ContextCompat.getColor(context, magnitudeColorResourceId);
     }
 
     /**

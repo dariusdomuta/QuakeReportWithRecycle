@@ -1,4 +1,4 @@
-package com.example.dariu.quakereport;
+package com.example.dariu.quakereport.utils;
 
 import org.json.JSONObject;
 
@@ -15,11 +15,12 @@ import java.util.ArrayList;
 import android.text.TextUtils;
 import android.util.Log;
 
-        import org.json.JSONArray;
-        import org.json.JSONException;
-        import org.json.JSONObject;
+import com.example.dariu.quakereport.pojos.Earthquake;
+import com.example.dariu.quakereport.activities.EarthquakeActivity;
 
-        import java.util.ArrayList;
+import org.json.JSONArray;
+        import org.json.JSONException;
+
 import java.util.List;
 
 /**
